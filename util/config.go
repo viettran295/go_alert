@@ -5,6 +5,9 @@ import "github.com/spf13/viper"
 type Config struct{
 	EmailSenderAddress string `mapstructure:"EMAIL_SENDER_ADDRESS"`
 	EmailSenderPassword string `mapstructure:"EMAIL_SENDER_PASSWORD"`
+
+	KafkaBootstrapServer string `mapstructure:"KAFKA_BOOTSTRAPSERVER"`
+	KafkaGroupid string `mapstructure:"GROUP_Id"`
 }
 
 func LoadConfig(path string) (config Config, err error){
