@@ -9,6 +9,7 @@ type Config struct {
 	KafkaBootstrapServer string `mapstructure:"KAFKA_BOOTSTRAPSERVER"`
 	ProducerGroupid      string `mapstructure:"PRODUCER_GROUP_Id"`
 	ConsumerGroupid      string `mapstructure:"CONSUMER_GROUP_ID"`
+	CoinMarketCapAPIkey  string `mapstructure:"COIN_MARKET_CAP_API_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
