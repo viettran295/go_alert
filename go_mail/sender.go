@@ -1,4 +1,4 @@
-package mail_alert
+package go_mail
 
 import (
 	"net/smtp"
