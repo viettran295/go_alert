@@ -1,13 +1,12 @@
 package chart_trend
 
 import (
-	"fmt"
+	"encoding/json"
 	"go_alert/util"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 type APISource struct {
@@ -17,29 +16,50 @@ type APISource struct {
 	Sym    string
 }
 
-func GetPrice() {
-	cfg, _ := util.LoadConfig(".")
+type CryptoAPIResponse struct {
+	Data map[string]CoinSymbol `json:"data"`
+}
 
-	apiSource := &APISource{
-		Url:    "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",
-		Method: "GET",
-		ApiKey: cfg.CoinMarketCapAPIkey,
-		Sym:    "eth",
+type CoinSymbol struct {
+	Quote struct {
+		Usd CurrencyUSD `json:"USD"`
+	} `json:"quote"`
+}
+
+type CurrencyUSD struct {
+	Price            float32 `json:"price"`
+	PercentChange60d float32 `json:"percent_change_60d"`
+	PercentChange90d float32 `json:"percent_change_90d"`
+	LastUpdate       string  `json:"last_updated"`
+}
+
+func processJSON(payload []byte) CryptoAPIResponse{
+	resp := &CryptoAPIResponse{}
+	if err := json.Unmarshal(payload, resp); err != nil{
+		log.Fatal("Fail to process JSON")
 	}
+	return *resp
+}
 
-	req, err := http.NewRequest("GET", apiSource.Url, nil)
+
+
+func GetPrice(symbol string, apiSrc APISource) CryptoAPIResponse {
+	cfg, _ := util.LoadConfig(".")
+	apiSrc.ApiKey = cfg.CoinMarketCapAPIkey
+	apiSrc.Sym = symbol
+
+	req, err := http.NewRequest("GET", apiSrc.Url, nil)
 	if err != nil {
-		log.Print(err)
-		os.Exit(1)
+		log.Fatal("Fail to request")
 	}
 
 	q := url.Values{}
-	q.Add("symbol", apiSource.Sym)
-	req.Header.Add("X-CMC_PRO_API_KEY", apiSource.ApiKey)
+	q.Add("symbol", apiSrc.Sym)
+	req.Header.Add("X-CMC_PRO_API_KEY", apiSrc.ApiKey)
 	req.URL.RawQuery = q.Encode()
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	info, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(info))
+	return processJSON(info)
 }
