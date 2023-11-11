@@ -28,22 +28,24 @@ type CoinSymbol struct {
 
 type CurrencyUSD struct {
 	Price            float32 `json:"price"`
+	Volume24h        float32 `json:"volume_24h"`
+	VolumeChange24h  float32 `json:"volume_change_24h"`
+	PercentChange1h  float32 `json:"percent_change_1h"`
+	PercentChange24h float32 `json:"percent_change_24h"`
 	PercentChange60d float32 `json:"percent_change_60d"`
 	PercentChange90d float32 `json:"percent_change_90d"`
 	LastUpdate       string  `json:"last_updated"`
 }
 
-func processJSON(payload []byte) CryptoAPIResponse{
+func processJSON(payload []byte) CryptoAPIResponse {
 	resp := &CryptoAPIResponse{}
-	if err := json.Unmarshal(payload, resp); err != nil{
+	if err := json.Unmarshal(payload, resp); err != nil {
 		log.Fatal("Fail to process JSON")
 	}
 	return *resp
 }
 
-
-
-func GetPrice(symbol string, apiSrc APISource) CryptoAPIResponse {
+func GetPrice(symbol string, apiSrc APISource, ch chan CryptoAPIResponse){
 	cfg, _ := util.LoadConfig(".")
 	apiSrc.ApiKey = cfg.CoinMarketCapAPIkey
 	apiSrc.Sym = symbol
@@ -61,5 +63,5 @@ func GetPrice(symbol string, apiSrc APISource) CryptoAPIResponse {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	info, _ := io.ReadAll(resp.Body)
-	return processJSON(info)
+	ch <- processJSON(info)
 }
