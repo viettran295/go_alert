@@ -1,4 +1,4 @@
-package chart_trend
+package req
 
 import (
 	"encoding/json"
