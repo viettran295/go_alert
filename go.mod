@@ -4,7 +4,6 @@ go 1.21.0
 
 require (
 	github.com/confluentinc/confluent-kafka-go v1.9.2
-	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/spf13/viper v1.16.0
 )
 

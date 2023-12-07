@@ -1,49 +1,32 @@
 package go_mail
 
 import (
+	"go_alert/util"
+	"log"
 	"net/smtp"
-
-	"github.com/jordan-wright/email"
 )
 
-const(
+const (
 	smtpAuthAddress = "smtp.gmail.com"
-	smtpServer = "smtp.gmail.com:587"
-
+	smtpServer      = "smtp.gmail.com:587"
 )
 
-type EmailSender interface{
-	SendEmail(
-		From string,
-		To []string,
-		Subject string, 
-		Text []byte,
-	) error
-}
-
-type GmailSender struct{
-	FromEmailAddress string
-	FromEmailPassword string
-}
-
-func NewGmailSender(address string, password string) *GmailSender{
-	return &GmailSender{
-		FromEmailAddress: address,
-		FromEmailPassword: password,
+func SendEmail(
+	from string,
+	to []string,
+	subject string,
+	text string,
+) {
+	cfg, err_cfg := util.LoadConfig(".")
+	if err_cfg != nil {
+		log.Println("Error while loading config")
 	}
-}
 
-func (sender *GmailSender) SendEmail(
-	from string, 
-	to []string, 
-	subject string, 
-	text []byte,
-) error{
-	e := email.NewEmail()
-	e.From = from
-	e.To = to
-	e.Subject = subject
-	e.Text = text
-	smtpAuth := smtp.PlainAuth("", sender.FromEmailAddress, sender.FromEmailPassword, smtpAuthAddress)
-	return e.Send(smtpServer, smtpAuth)
+	msg := "Subject: " + subject + "\r\n" + text
+	err := smtp.SendMail(smtpServer,
+		smtp.PlainAuth("", cfg.EmailSenderAddress, cfg.EmailSenderPassword, smtpAuthAddress),
+		from, to, []byte(msg))
+	if err != nil {
+		log.Println("Error while sending email")
+	}
 }
