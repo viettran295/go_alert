@@ -26,7 +26,7 @@ func SendEmail(
 ) {
 	cfg, err_cfg := util.LoadConfig(".")
 	if err_cfg != nil {
-		log.Println("Error while loading config")
+		log.Panicln("Error while loading config")
 	}
 
 	msg := "Subject: " + subject + "\r\n" + text
@@ -34,6 +34,6 @@ func SendEmail(
 		smtp.PlainAuth("", cfg.EmailSenderAddress, cfg.EmailSenderPassword, smtpAuthAddress),
 		from, to, []byte(msg))
 	if err != nil {
-		log.Println("Error while sending email")
+		log.Panicln("Error while sending email")
 	}
 }

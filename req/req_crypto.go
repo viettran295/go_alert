@@ -40,7 +40,7 @@ type CurrencyUSD struct {
 func processJSON(payload []byte) CryptoAPIResponse {
 	resp := &CryptoAPIResponse{}
 	if err := json.Unmarshal(payload, resp); err != nil {
-		log.Fatal("Fail to process JSON")
+		log.Panicln("Fail to process JSON")
 	}
 	return *resp
 }
@@ -52,7 +52,7 @@ func GetPrice(symbol string, apiSrc APISource, ch chan CryptoAPIResponse){
 
 	req, err := http.NewRequest("GET", apiSrc.Url, nil)
 	if err != nil {
-		log.Fatal("Fail to request")
+		log.Panicln("Fail to request")
 	}
 
 	q := url.Values{}

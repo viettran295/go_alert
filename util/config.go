@@ -1,6 +1,10 @@
 package util
 
-import "github.com/spf13/viper"
+import (
+	"log"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
 	EmailSenderAddress  string `mapstructure:"EMAIL_SENDER_ADDRESS"`
@@ -18,6 +22,7 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetConfigType("env")
 	err = viper.ReadInConfig()
 	if err != nil {
+		log.Panicln("Error while loading config")
 		return
 	}
 	err = viper.Unmarshal(&config)

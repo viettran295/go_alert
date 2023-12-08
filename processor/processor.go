@@ -21,16 +21,17 @@ func convertRawToPercentChange1h(payload req.CryptoAPIResponse, symbol string) f
 func ProcessCryptoAPIType(payload req.CryptoAPIResponse, symbol string, typeComp string) float32 {
 	supportedTypeComp := []string{"VolChange24h", "PerChange24h", "PerChange1h"}
 	if slices.Contains(supportedTypeComp, typeComp) == false {
-		log.Println("Type is not supported")
+		log.Panicln("Type is not supported")
 	}
 
 	switch typeComp {
-	case "VolChange24h":
+	case supportedTypeComp[0]:
 		return convertRawToVolumeChange24h(payload, symbol)
-	case "PerChange24h":
+	case supportedTypeComp[1]:
 		return convertRawToPercentChange24h(payload, symbol)
-	case "PerChange1h":
+	case supportedTypeComp[2]:
 		return convertRawToPercentChange1h(payload, symbol)
+	default:
+		return 0
 	}
-	return 0
 }

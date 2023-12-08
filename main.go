@@ -21,8 +21,8 @@ func main() {
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
 	TypeAndThresh := map[string]float64{
 		"VolChange24h": 100,
-		"PerChange24h": 20,
-		"PerChange1h":  10}
+		"PerChange24h": 10,
+		"PerChange1h":  5}
 
 	From := "vietpride295@gmail.com"
 	To := []string{"viettran295@gmail.com"}
@@ -38,6 +38,7 @@ func main() {
 
 				if AbsVal > float64(thresh) {
 					Subject, Msg := go_mail.CreateAlertMsg(symbol, typ, float64(value))
+					log.Println("ALERT! ", Msg)
 					go go_mail.SendEmail(From, To, Subject, Msg)
 				}
 			}
