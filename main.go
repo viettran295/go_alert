@@ -16,7 +16,6 @@ var CryptoAPISrc = req.APISource{
 }
 
 func main() {
-	start := time.Now()
 	ch := make(chan req.CryptoAPIResponse)
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
 	TypeAndThresh := map[string]float64{
@@ -43,7 +42,6 @@ func main() {
 				}
 			}
 		}
-		log.Println("Time execute: ", time.Since(start))
 		time.Sleep(6 * time.Hour)
 	}
 

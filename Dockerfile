@@ -1,8 +1,10 @@
-FROM golang:1.21
+FROM --platform=$BUILDPLATFORM golang:1.21 AS build
 
 WORKDIR /app
 COPY . /app
-RUN go mod download 
-RUN go build -o /go-alert
+ARG TARGETOS TARGETARCH
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH
+RUN go mod download && go mod verify
+RUN go build -o /app/go-alert
 
-CMD [ "/go-alert" ]
+ENTRYPOINT [ "/app/go-alert"]
