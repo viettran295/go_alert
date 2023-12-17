@@ -17,13 +17,11 @@ type APISource struct {
 }
 
 type CryptoAPIResponse struct {
-	Data map[string]CoinSymbol `json:"data"`
-}
-
-type CoinSymbol struct {
-	Quote struct {
-		Usd CurrencyUSD `json:"USD"`
-	} `json:"quote"`
+	Data map[string] struct {
+		Quote struct {
+			Usd CurrencyUSD `json:"USD"`
+		} `json:"quote"`
+	} `json:"data"`
 }
 
 type CurrencyUSD struct {
