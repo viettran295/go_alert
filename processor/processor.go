@@ -3,6 +3,7 @@ package processor
 import (
 	"go_alert/req"
 	"log"
+	"math"
 	"slices"
 )
 
@@ -33,5 +34,14 @@ func ProcessCryptoType(payload req.CryptoResponse, symbol string, typeComp strin
 		return convertRawToPercentChange1h(payload, symbol)
 	default:
 		return 0
+	}
+}
+
+func ProcessStockThresh[T int32 | float64](oldPrice, newPrice T, threshold int32) bool {
+	PercentChange := (newPrice - oldPrice) / oldPrice
+	if math.Abs(float64(PercentChange)) > float64(threshold) {
+		return true
+	} else {
+		return false
 	}
 }

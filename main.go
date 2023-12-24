@@ -10,14 +10,11 @@ import (
 	"time"
 )
 
-var CryptoAPISrc = req.APISource{
-	Url:    "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",
-	Method: "GET",
-}
-
 func main() {
-	ch := make(chan req.CryptoAPIResponse)
+	stockCh := make(chan req.StockResponse)
+	ch := make(chan req.CryptoResponse)
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
+	StockSym := []string{"GOOG", "COIN", "AMZN", "META", "MSTR"}
 	TypeAndThresh := map[string]float64{
 		"VolChange24h": 100,
 		"PerChange24h": 10,
@@ -27,12 +24,17 @@ func main() {
 	To := []string{"viettran295@gmail.com"}
 
 	for {
+		for _, symbol := range StockSym{
+			go req.GetStockPrice(symbol, stockCh)
+			payload := <- stockCh
+			log.Println(payload)
+		}
 		for _, symbol := range CryptoSym {
-			go req.GetPrice(symbol, CryptoAPISrc, ch)
+			go req.GetCryptoPrice(symbol, ch)
 			payload := <-ch
 			log.Println(payload)
 			for typ, thresh := range TypeAndThresh {
-				value := processor.ProcessCryptoAPIType(payload, symbol, typ)
+				value := processor.ProcessCryptoType(payload, symbol, typ)
 				AbsVal := math.Abs(float64(value))
 
 				if AbsVal > float64(thresh) {
