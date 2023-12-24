@@ -1,7 +1,6 @@
 package req
 
 import (
-	"encoding/json"
 	"go_alert/util"
 	"io"
 	"log"
@@ -16,34 +15,29 @@ type APISource struct {
 	Sym    string
 }
 
-type CryptoAPIResponse struct {
+type CryptoResponse struct {
 	Data map[string] struct {
 		Quote struct {
-			Usd CurrencyUSD `json:"USD"`
+			Usd struct {
+				Price            float32 `json:"price"`
+				Volume24h        float32 `json:"volume_24h"`
+				VolumeChange24h  float32 `json:"volume_change_24h"`
+				PercentChange1h  float32 `json:"percent_change_1h"`
+				PercentChange24h float32 `json:"percent_change_24h"`
+				PercentChange60d float32 `json:"percent_change_60d"`
+				PercentChange90d float32 `json:"percent_change_90d"`
+				LastUpdate       string  `json:"last_updated"`
+			} `json:"USD"`
 		} `json:"quote"`
 	} `json:"data"`
 }
 
-type CurrencyUSD struct {
-	Price            float32 `json:"price"`
-	Volume24h        float32 `json:"volume_24h"`
-	VolumeChange24h  float32 `json:"volume_change_24h"`
-	PercentChange1h  float32 `json:"percent_change_1h"`
-	PercentChange24h float32 `json:"percent_change_24h"`
-	PercentChange60d float32 `json:"percent_change_60d"`
-	PercentChange90d float32 `json:"percent_change_90d"`
-	LastUpdate       string  `json:"last_updated"`
-}
-
-func processJSON(payload []byte) CryptoAPIResponse {
-	resp := &CryptoAPIResponse{}
-	if err := json.Unmarshal(payload, resp); err != nil {
-		log.Panicln("Fail to process JSON")
+func GetCryptoPrice(symbol string, ch chan CryptoResponse){
+	var apiSrc = APISource{
+	Url:    "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",
+	Method: "GET",
 	}
-	return *resp
-}
 
-func GetPrice(symbol string, apiSrc APISource, ch chan CryptoAPIResponse){
 	cfg, _ := util.LoadConfig(".")
 	apiSrc.ApiKey = cfg.CoinMarketCapAPIkey
 	apiSrc.Sym = symbol
@@ -61,5 +55,5 @@ func GetPrice(symbol string, apiSrc APISource, ch chan CryptoAPIResponse){
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	info, _ := io.ReadAll(resp.Body)
-	ch <- processJSON(info)
+	ch <- processJSON(info, &CryptoResponse{})
 }
