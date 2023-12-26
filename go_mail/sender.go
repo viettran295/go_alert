@@ -12,18 +12,18 @@ const (
 	smtpServer      = "smtp.gmail.com:587"
 )
 
-func CreateAlertMsg(symbol string, typ string, value float64) (string, string) {
-	Subject := symbol + " ALERT !" 
+func CreateAlertMsg(symbol string, typ string, value float64) {
+	Subject := symbol + " ALERT !"
 	Msg := typ + " of " + symbol + " is " + strconv.FormatFloat(float64(value), 'f', -1, 64)
-	return Subject, Msg
+	SendEmail(Subject, Msg)
 }
 
 func SendEmail(
-	from string,
-	to []string,
 	subject string,
 	text string,
 ) {
+	var From string = "vietpride295@gmail.com"
+	var To = []string{"viettran295@gmail.com"}
 	cfg, err_cfg := util.LoadConfig(".")
 	if err_cfg != nil {
 		log.Panicln("Error while loading config")
@@ -32,7 +32,7 @@ func SendEmail(
 	msg := "Subject: " + subject + "\r\n" + text
 	err := smtp.SendMail(smtpServer,
 		smtp.PlainAuth("", cfg.EmailSenderAddress, cfg.EmailSenderPassword, smtpAuthAddress),
-		from, to, []byte(msg))
+		From, To, []byte(msg))
 	if err != nil {
 		log.Panicln("Error while sending email")
 	}
