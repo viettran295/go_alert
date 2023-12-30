@@ -16,10 +16,11 @@ func main() {
 	stockCh := make(chan req.StockResponse)
 	ch := make(chan req.CryptoResponse)
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
-	StockSym := []string{"GOOG", "COIN", "AMZN", "META", "MSTR"}
+	StockSym := []string{"GOOG", "COIN", "AMZN", "META", "MSTR",
+						"AMD", "ARM", "NVDA", "TXN", "IBM"}
 
 	TypeStockThresh := map[string]float64{
-		"Market price": 10,
+		"Market price": 5,
 		"Volume":       50,
 	}
 	TypeAndThresh := map[string]float64{
