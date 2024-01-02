@@ -34,22 +34,24 @@ func main() {
 			payload := <-stockCh
 			log.Println(payload)
 
-			newPrice := payload.Chart.Result[0].Meta.MarketPrice
-			newVol := payload.Chart.Result[0].Indicators.Quote[0].Volume[0]
-			oldPrice := db.GetRdb(&rdb, symbol)
-			oldVol := db.GetRdb(&rdb, symbol)
-			percentPriceChange := processor.PercentChange(oldPrice, newPrice)
-			percentVolChange := processor.PercentChange(oldVol, float64(newVol))
+			timeStamp := time.Unix(int64(payload.Chart.Result[0].Timestamp[0]), 0)
+			currentPrice := payload.Chart.Result[0].Meta.MarketPrice
+			currentVol := payload.Chart.Result[0].Indicators.Quote[0].Volume[0]
+			if timeStamp.Hour() <= 20 {
+				openPrice := payload.Chart.Result[0].Indicators.Quote[0].Open[0]
+				db.SetRdb(&rdb, symbol + "Price", openPrice)
+				db.SetRdb(&rdb, symbol + "Vol", currentVol)
+			}
+			oldPrice := db.GetRdb(&rdb, symbol + "Price")
+			oldVol := db.GetRdb(&rdb, symbol + "Vol")
+			percentPriceChange := processor.PercentChange(oldPrice, currentPrice)
+			percentVolChange := processor.PercentChange(oldVol, float64(currentVol))
 
 			if percentPriceChange >= TypeStockThresh["Market price"] {
 				go go_mail.CreateAlertMsg(symbol, "Market price", percentPriceChange)
-			}
-			if percentVolChange >= TypeStockThresh["Volume"] {
+			} else if percentVolChange >= TypeStockThresh["Volume"] {
 				go go_mail.CreateAlertMsg(symbol, "Volume", percentVolChange)
 			}
-			db.SetRdb(&rdb, symbol, newPrice)
-			db.SetRdb(&rdb, symbol, newVol)
-
 		}
 		for _, symbol := range CryptoSym {
 			go req.GetCryptoPrice(symbol, ch)
@@ -64,7 +66,7 @@ func main() {
 				}
 			}
 		}
-		time.Sleep(6 * time.Hour)
+		time.Sleep(4 * time.Hour)
 	}
 
 	// <<<<<<< ETH >>>>>>
