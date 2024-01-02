@@ -17,16 +17,16 @@ type StockResponse struct {
 				Symbol      string  `json:"symbol"`
 				MarketPrice float64 `json:"regularMarketPrice"`
 			} `json:"meta"`
-
+			Timestamp  []int32 `json:"timestamp"`
 			Indicators struct {
 				Quote []struct {
-					Volume []int32 `json:"volume"`
+					Open   []float64 `json:"open"`
+					Volume []int32   `json:"volume"`
 				} `json:"quote"`
 			} `json:"indicators"`
 		} `json:"result"`
 	} `json:"chart"`
 }
-
 
 func processJSON[T any](payload []byte, resp *T) T {
 	if err := json.Unmarshal(payload, resp); err != nil {
@@ -38,16 +38,15 @@ func processJSON[T any](payload []byte, resp *T) T {
 func GetStockPrice(symbol string, ch chan StockResponse) {
 	stockUrl := fmt.Sprintf("https://query1.finance.yahoo.com/v8/finance/chart/%s?interval=1d", symbol)
 	resp, err := http.Get(stockUrl)
-	if err != nil{
+	if err != nil {
 		log.Panicln("Error while getting stock price")
 	}
 
 	data, err := io.ReadAll(resp.Body)
-	if err != nil{
+	if err != nil {
 		log.Panicln("Error while reading stock price")
 	}
 
 	stockResp := processJSON(data, &StockResponse{})
 	ch <- stockResp
 }
-
