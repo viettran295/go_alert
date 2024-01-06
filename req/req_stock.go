@@ -20,7 +20,8 @@ type StockResponse struct {
 			Timestamp  []int32 `json:"timestamp"`
 			Indicators struct {
 				Quote []struct {
-					Open   []float64 `json:"open"`
+					High []float64 `json:"high"`
+					Low []float64 `json:"low"`
 					Volume []int32   `json:"volume"`
 				} `json:"quote"`
 			} `json:"indicators"`

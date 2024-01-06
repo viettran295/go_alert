@@ -38,17 +38,25 @@ func main() {
 			currentPrice := payload.Chart.Result[0].Meta.MarketPrice
 			currentVol := payload.Chart.Result[0].Indicators.Quote[0].Volume[0]
 			if timeStamp.Hour() <= 20 {
-				openPrice := payload.Chart.Result[0].Indicators.Quote[0].Open[0]
-				db.SetRdb(&rdb, symbol + "Price", openPrice)
+				highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
+				lowPrice := payload.Chart.Result[0].Indicators.Quote[0].Low[0]
+				db.SetRdb(&rdb, symbol + "HighPrice", highPrice)
+				db.SetRdb(&rdb, symbol + "LowPrice", lowPrice)
 				db.SetRdb(&rdb, symbol + "Vol", currentVol)
+				log.Println("Threshold of " + symbol + " is set")
 			}
-			oldPrice := db.GetRdb(&rdb, symbol + "Price")
+
+			oldHigh := db.GetRdb(&rdb, symbol + "HighPrice")
+			oldLow := db.GetRdb(&rdb, symbol + "LowPrice")
 			oldVol := db.GetRdb(&rdb, symbol + "Vol")
-			percentPriceChange := processor.PercentChange(oldPrice, currentPrice)
+			percentHighChange := processor.PercentChange(oldHigh, currentPrice)
+			percentLowChange := processor.PercentChange(oldLow, currentPrice)
 			percentVolChange := processor.PercentChange(oldVol, float64(currentVol))
 
-			if percentPriceChange >= TypeStockThresh["Market price"] {
-				go go_mail.CreateAlertMsg(symbol, "Market price", percentPriceChange)
+			if percentHighChange >= TypeStockThresh["Market price"] {
+				go go_mail.CreateAlertMsg(symbol, "Percent price change", percentHighChange)
+			} else if percentLowChange >= TypeStockThresh["Market price"] { 
+				go go_mail.CreateAlertMsg(symbol, "Percent price change", percentLowChange)
 			} else if percentVolChange >= TypeStockThresh["Volume"] {
 				go go_mail.CreateAlertMsg(symbol, "Volume", percentVolChange)
 			}
