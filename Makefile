@@ -1,5 +1,5 @@
 APP_NAME = go-alert
-VM_DIR = ~/Desktop/OracleVM
+VM_DIR = ~/Desktop/Dev/OracleVM
 
 build:
 	go mod download
@@ -13,6 +13,7 @@ all: zip build
 
 clean:
 	go clean
+	go mod tidy
 ifneq ($(wildcard ${APP_NAME}),)
 	rm ${APP_NAME} && rm ${APP_NAME}.* 
 	
