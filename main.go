@@ -35,7 +35,6 @@ func main() {
 			log.Println(payload)
 
 			timeStamp := time.Unix(int64(payload.Chart.Result[0].Timestamp[0]), 0)
-			currentPrice := payload.Chart.Result[0].Meta.MarketPrice
 			currentVol := payload.Chart.Result[0].Indicators.Quote[0].Volume[0]
 			if timeStamp.Hour() <= 20 {
 				highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
@@ -43,22 +42,21 @@ func main() {
 				db.SetRdb(&rdb, symbol + "HighPrice", highPrice)
 				db.SetRdb(&rdb, symbol + "LowPrice", lowPrice)
 				db.SetRdb(&rdb, symbol + "Vol", currentVol)
-				log.Println("Threshold of " + symbol + " is set")
 			}
 
 			oldHigh := db.GetRdb(&rdb, symbol + "HighPrice")
 			oldLow := db.GetRdb(&rdb, symbol + "LowPrice")
 			oldVol := db.GetRdb(&rdb, symbol + "Vol")
-			percentHighChange := processor.PercentChange(oldHigh, currentPrice)
-			percentLowChange := processor.PercentChange(oldLow, currentPrice)
+			percentChange := processor.PercentChange(oldHigh, oldLow)
+			log.Printf("Percent price change of %s: %f \n", symbol, percentChange)
 			percentVolChange := processor.PercentChange(oldVol, float64(currentVol))
 
-			if percentHighChange >= TypeStockThresh["Market price"] {
-				go go_mail.CreateAlertMsg(symbol, "Percent price change", percentHighChange)
-			} else if percentLowChange >= TypeStockThresh["Market price"] { 
-				go go_mail.CreateAlertMsg(symbol, "Percent price change", percentLowChange)
+			if percentChange >= TypeStockThresh["Market price"] {
+				log.Printf("ALERT percent price change of %s: %f \n", symbol, percentChange)
+				go go_mail.CreateAlertMsg(symbol, "Percent price change: ", percentChange)
 			} else if percentVolChange >= TypeStockThresh["Volume"] {
-				go go_mail.CreateAlertMsg(symbol, "Volume", percentVolChange)
+				log.Printf("ALERT percent price change of %s: %f \n", symbol, percentVolChange)
+				go go_mail.CreateAlertMsg(symbol, "Percent volume change: ", percentVolChange)
 			}
 		}
 		for _, symbol := range CryptoSym {
@@ -70,6 +68,7 @@ func main() {
 				AbsVal := math.Abs(float64(value))
 
 				if AbsVal > float64(thresh) {
+					log.Printf("ALERT percent price change of %s: %f \n", symbol, value)
 					go go_mail.CreateAlertMsg(symbol, typ, float64(value))
 				}
 			}
