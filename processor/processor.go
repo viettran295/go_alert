@@ -39,7 +39,7 @@ func ProcessCryptoType(payload req.CryptoResponse, symbol string, typeComp strin
 
 func PercentChange[T int32 | float64](oldPrice, newPrice T) T {
 	if oldPrice != 0 {
-		return T(math.Abs(float64(newPrice - oldPrice))) / oldPrice
+		return (T(math.Abs(float64(newPrice-oldPrice))) / oldPrice) * 100
 	} else {
 		return 0
 	}
