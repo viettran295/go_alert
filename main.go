@@ -21,7 +21,7 @@ func main() {
 
 	TypeStockThresh := map[string]float64{
 		"Market price": 5,
-		"Volume":       50,
+		"Volume":       30,
 	}
 	TypeAndThresh := map[string]float64{
 		"VolChange24h": 100,
@@ -53,10 +53,10 @@ func main() {
 
 			if percentChange >= TypeStockThresh["Market price"] {
 				log.Printf("ALERT percent price change of %s: %f \n", symbol, percentChange)
-				go go_mail.CreateAlertMsg(symbol, "Percent price change: ", percentChange)
+				go go_mail.CreateAlertMsg(symbol, "Percent price change", percentChange)
 			} else if percentVolChange >= TypeStockThresh["Volume"] {
 				log.Printf("ALERT percent price change of %s: %f \n", symbol, percentVolChange)
-				go go_mail.CreateAlertMsg(symbol, "Percent volume change: ", percentVolChange)
+				go go_mail.CreateAlertMsg(symbol, "Percent volume change", percentVolChange)
 			}
 		}
 		for _, symbol := range CryptoSym {
