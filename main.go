@@ -21,12 +21,13 @@ func main() {
 
 	TypeStockThresh := map[string]float64{
 		"Market price": 5,
-		"Volume":       30,
+		"Volume":       20,
 	}
 	TypeAndThresh := map[string]float64{
 		"VolChange24h": 100,
 		"PerChange24h": 10,
-		"PerChange1h":  5}
+		"PerChange1h":  5,
+	}
 
 	for {
 		for _, symbol := range StockSym {
@@ -36,19 +37,16 @@ func main() {
 
 			timeStamp := time.Unix(int64(payload.Chart.Result[0].Timestamp[0]), 0)
 			currentVol := payload.Chart.Result[0].Indicators.Quote[0].Volume[0]
+			highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
 			if timeStamp.Hour() <= 20 {
-				highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
 				lowPrice := payload.Chart.Result[0].Indicators.Quote[0].Low[0]
-				db.SetRdb(&rdb, symbol + "HighPrice", highPrice)
 				db.SetRdb(&rdb, symbol + "LowPrice", lowPrice)
 				db.SetRdb(&rdb, symbol + "Vol", currentVol)
 			}
 
-			oldHigh := db.GetRdb(&rdb, symbol + "HighPrice")
 			oldLow := db.GetRdb(&rdb, symbol + "LowPrice")
 			oldVol := db.GetRdb(&rdb, symbol + "Vol")
-			percentChange := processor.PercentChange(oldHigh, oldLow)
-			log.Printf("Percent price change of %s: %f \n", symbol, percentChange)
+			percentChange := processor.PercentChange(highPrice, oldLow)
 			percentVolChange := processor.PercentChange(oldVol, float64(currentVol))
 
 			if percentChange >= TypeStockThresh["Market price"] {
@@ -73,7 +71,7 @@ func main() {
 				}
 			}
 		}
-		time.Sleep(4 * time.Hour)
+		time.Sleep(6 * time.Hour)
 	}
 
 	// <<<<<<< ETH >>>>>>
