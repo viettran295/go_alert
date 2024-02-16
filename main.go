@@ -17,7 +17,7 @@ func main() {
 	ch := make(chan req.CryptoResponse)
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
 	StockSym := []string{"GOOG", "COIN", "AMZN", "META", "MSTR",
-						"AMD", "ARM", "NVDA", "TXN", "IBM"}
+		"AMD", "ARM", "NVDA", "TXN", "IBM"}
 
 	TypeStockThresh := map[string]float64{
 		"Market price": 5,
@@ -39,14 +39,14 @@ func main() {
 			highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
 			if timeStamp.Hour() <= 13 || timeStamp.Hour() >= 20 {
 				lowPrice := payload.Chart.Result[0].Indicators.Quote[0].Low[0]
-				db.SetRdb(&rdb, symbol + "LowPrice", lowPrice)
-				log.Printf("Set low price to redis: %f \n", lowPrice)
-				db.SetRdb(&rdb, symbol + "Vol", currentVol)
-				log.Printf("Set volume to redis: %f \n", currentVol)
+				db.SetRdb(&rdb, symbol+"LowPrice", lowPrice)
+				log.Printf("Set low price %s to redis: %f \n", symbol, lowPrice)
+				db.SetRdb(&rdb, symbol+"Vol", currentVol)
+				log.Printf("Set volume %s to redis: %d \n", symbol, currentVol)
 			}
 
-			oldLow := db.GetRdb(&rdb, symbol + "LowPrice")
-			oldVol := db.GetRdb(&rdb, symbol + "Vol")
+			oldLow := db.GetRdb(&rdb, symbol+"LowPrice")
+			oldVol := db.GetRdb(&rdb, symbol+"Vol")
 			percentChange := processor.PercentChange(highPrice, oldLow)
 			percentVolChange := processor.PercentChange(oldVol, float64(currentVol))
 
