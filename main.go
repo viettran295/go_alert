@@ -34,10 +34,10 @@ func main() {
 			go req.GetStockPrice(symbol, stockCh)
 			payload := <-stockCh
 
-			timeStamp := time.Unix(int64(payload.Chart.Result[0].Timestamp[0]), 0)
+			currTime := time.Now().Hour()
 			currentVol := payload.Chart.Result[0].Indicators.Quote[0].Volume[0]
 			highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
-			if timeStamp.Hour() <= 13 || timeStamp.Hour() >= 20 {
+			if currTime <= 13 || currTime >= 20 {
 				lowPrice := payload.Chart.Result[0].Indicators.Quote[0].Low[0]
 				db.SetRdb(&rdb, symbol+"LowPrice", lowPrice)
 				log.Printf("Set low price %s to redis: %f \n", symbol, lowPrice)
