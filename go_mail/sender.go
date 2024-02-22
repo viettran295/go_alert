@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/smtp"
 	"strconv"
+	"time"
 )
 
 const (
@@ -13,8 +14,9 @@ const (
 )
 
 func CreateAlertMsg(symbol string, typ string, value float64) {
+	t := time.Now()
 	Subject := symbol + " ALERT !"
-	Msg := typ + " of " + symbol + " is " + strconv.FormatFloat(float64(value), 'f', -1, 64)
+	Msg := typ + " of " + symbol + " is " + strconv.FormatFloat(float64(value), 'f', -1, 64) + "\n" + t.Format(time.RFC3339)
 	SendEmail(Subject, Msg)
 }
 

@@ -33,16 +33,14 @@ func main() {
 		for _, symbol := range StockSym {
 			go req.GetStockPrice(symbol, stockCh)
 			payload := <-stockCh
-
+			log.Println(payload)
 			currTime := time.Now().Hour()
 			currentVol := payload.Chart.Result[0].Indicators.Quote[0].Volume[0]
 			highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
 			if currTime <= 13 || currTime >= 20 {
 				lowPrice := payload.Chart.Result[0].Indicators.Quote[0].Low[0]
 				db.SetRdb(&rdb, symbol+"LowPrice", lowPrice)
-				log.Printf("Set low price %s to redis: %f \n", symbol, lowPrice)
 				db.SetRdb(&rdb, symbol+"Vol", currentVol)
-				log.Printf("Set volume %s to redis: %d \n", symbol, currentVol)
 			}
 
 			oldLow := db.GetRdb(&rdb, symbol+"LowPrice")
