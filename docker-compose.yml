@@ -8,6 +8,6 @@ services:
     
   app:
     build: .
-    depends_on:
-      - redis
+    # depends_on:
+    #   - redis
     network_mode: "host"
