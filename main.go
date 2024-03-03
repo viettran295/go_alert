@@ -2,7 +2,6 @@ package main
 
 import (
 	// kafka "go_alert/go_kafka"
-	"go_alert/db"
 	"go_alert/go_mail"
 	"go_alert/processor"
 	"go_alert/req"
@@ -12,7 +11,6 @@ import (
 )
 
 func main() {
-	rdb := db.NewRdb()
 	stockCh := make(chan req.StockResponse)
 	ch := make(chan req.CryptoResponse)
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
@@ -20,7 +18,7 @@ func main() {
 		"AMD", "ARM", "NVDA", "TXN", "IBM"}
 
 	TypeStockThresh := map[string]float64{
-		"Market price": 5,
+		"Market price": 10,
 		"Volume":       20,
 	}
 	TypeAndThresh := map[string]float64{
@@ -34,26 +32,15 @@ func main() {
 			go req.GetStockPrice(symbol, stockCh)
 			payload := <-stockCh
 			log.Println(payload)
-			currTime := time.Now().Hour()
-			currentVol := payload.Chart.Result[0].Indicators.Quote[0].Volume[0]
 			highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
-			if currTime <= 13 || currTime >= 20 {
-				lowPrice := payload.Chart.Result[0].Indicators.Quote[0].Low[0]
-				db.SetRdb(&rdb, symbol+"LowPrice", lowPrice)
-				db.SetRdb(&rdb, symbol+"Vol", currentVol)
-			}
+			lowPrice := payload.Chart.Result[0].Indicators.Quote[0].Low[0]
 
-			oldLow := db.GetRdb(&rdb, symbol+"LowPrice")
-			oldVol := db.GetRdb(&rdb, symbol+"Vol")
-			percentChange := processor.PercentChange(highPrice, oldLow)
-			percentVolChange := processor.PercentChange(oldVol, float64(currentVol))
+			percentChange := processor.PercentChange(highPrice, lowPrice)
+			log.Println("Percent change of price: ", percentChange)
 
 			if percentChange >= TypeStockThresh["Market price"] {
 				log.Printf("ALERT percent price change of %s: %f \n", symbol, percentChange)
 				go go_mail.CreateAlertMsg(symbol, "Percent price change", percentChange)
-			} else if percentVolChange >= TypeStockThresh["Volume"] {
-				log.Printf("ALERT percent price change of %s: %f \n", symbol, percentVolChange)
-				go go_mail.CreateAlertMsg(symbol, "Percent volume change", percentVolChange)
 			}
 		}
 		for _, symbol := range CryptoSym {
