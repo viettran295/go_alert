@@ -12,6 +12,9 @@ import (
 
 func main() {
 	ch := make(chan req.CryptoResponse)
+	stockCh := make(chan req.Stock, 10)
+	stock := req.Stock{}
+
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
 	StockSym := []string{"GOOG", "COIN", "AMZN", "META", "MSTR",
 		"AMD", "ARM", "NVDA", "TXN", "IBM"}
@@ -23,7 +26,12 @@ func main() {
 	}
 
 	for {
-		
+		for _, ticker := range StockSym {
+			go req.ScrapStock(ticker, stockCh)
+			stock = <-stockCh
+			log.Println(stock)
+		}
+
 		for _, symbol := range CryptoSym {
 			go req.GetCryptoPrice(symbol, ch)
 			payload := <-ch
@@ -40,15 +48,6 @@ func main() {
 		}
 		time.Sleep(6 * time.Hour)
 	}
-
-	// <<<<<<< ETH >>>>>>
-	// client, err := ethclient.DialContext(context.Background(), infuraURL)
-	// if err != nil{
-	// 	log.Println(err)
-	// }
-	// defer client.Close()
-	// block, err := client.BlockByNumber(context.Background(), nil)
-	// log.Print(block.Number())
 
 	// <<<<<< Kafka >>>>>>
 	// if err_cfg != nil {
