@@ -11,16 +11,11 @@ import (
 )
 
 func main() {
-	stockCh := make(chan req.StockResponse)
 	ch := make(chan req.CryptoResponse)
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
 	StockSym := []string{"GOOG", "COIN", "AMZN", "META", "MSTR",
 		"AMD", "ARM", "NVDA", "TXN", "IBM"}
 
-	TypeStockThresh := map[string]float64{
-		"Market price": 10,
-		"Volume":       20,
-	}
 	TypeAndThresh := map[string]float64{
 		"VolChange24h": 100,
 		"PerChange24h": 10,
@@ -28,21 +23,7 @@ func main() {
 	}
 
 	for {
-		for _, symbol := range StockSym {
-			go req.GetStockPrice(symbol, stockCh)
-			payload := <-stockCh
-			log.Println(payload)
-			highPrice := payload.Chart.Result[0].Indicators.Quote[0].High[0]
-			lowPrice := payload.Chart.Result[0].Indicators.Quote[0].Low[0]
-
-			percentChange := processor.PercentChange(highPrice, lowPrice)
-			log.Println("Percent change of price: ", percentChange)
-
-			if percentChange >= TypeStockThresh["Market price"] {
-				log.Printf("ALERT percent price change of %s: %f \n", symbol, percentChange)
-				go go_mail.CreateAlertMsg(symbol, "Percent price change", percentChange)
-			}
-		}
+		
 		for _, symbol := range CryptoSym {
 			go req.GetCryptoPrice(symbol, ch)
 			payload := <-ch
