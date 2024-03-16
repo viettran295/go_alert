@@ -1,6 +1,7 @@
 package req
 
 import (
+	"encoding/json"
 	"go_alert/util"
 	"io"
 	"log"
@@ -30,6 +31,13 @@ type CryptoResponse struct {
 			} `json:"USD"`
 		} `json:"quote"`
 	} `json:"data"`
+}
+
+func processJSON[T any](payload []byte, resp *T) T {
+	if err := json.Unmarshal(payload, resp); err != nil {
+		log.Panicln("Fail to process JSON")
+	}
+	return *resp
 }
 
 func GetCryptoPrice(symbol string, ch chan CryptoResponse){
