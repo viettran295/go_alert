@@ -11,13 +11,12 @@ import (
 )
 
 func main() {
-	ch := make(chan req.CryptoResponse)
-	stockCh := make(chan req.Stock, 10)
-	stock := req.Stock{}
-
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
 	StockSym := []string{"GOOG", "COIN", "AMZN", "META", "MSTR",
 		"AMD", "ARM", "NVDA", "TXN", "IBM"}
+
+	ch := make(chan req.CryptoResponse, len(CryptoSym))
+	stockCh := make(chan req.Stock, len(StockSym))
 
 	TypeAndThresh := map[string]float64{
 		"VolChange24h": 100,
@@ -28,8 +27,9 @@ func main() {
 	for {
 		for _, ticker := range StockSym {
 			go req.ScrapStock(ticker, stockCh)
-			stock = <-stockCh
-			log.Println(stock)
+		}
+		for i := 0; i < len(StockSym); i++ {
+			log.Println(<-stockCh)
 		}
 
 		for _, symbol := range CryptoSym {
