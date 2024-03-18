@@ -43,15 +43,17 @@ func main() {
 
 		for _, symbol := range CryptoSym {
 			go req.GetCryptoPrice(symbol, ch)
+		}
+		for i := 0; i < len(CryptoSym); i++ {
 			payload := <-ch
-			log.Println(payload)
+			log.Print(payload)
 			for typ, thresh := range TypeAndThresh {
-				value := processor.ProcessCryptoType(payload, symbol, typ)
+				value := processor.ProcessCryptoType(payload, CryptoSym[i], typ)
 				AbsVal := math.Abs(float64(value))
 
 				if AbsVal > float64(thresh) {
-					log.Printf("ALERT percent price change of %s: %f \n", symbol, value)
-					go go_mail.CreateAlertMsg(symbol, typ, float64(value))
+					log.Printf("ALERT percent price change of %s: %f \n", CryptoSym[i], value)
+					go go_mail.CreateAlertMsg(CryptoSym[i], typ, float64(value))
 				}
 			}
 		}
