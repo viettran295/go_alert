@@ -10,8 +10,8 @@ import (
 )
 
 type Stock struct {
-	company       string
-	price, change float32
+	Company       string
+	Price, Change float32
 }
 
 func trimSpecialChar(str string) string {
@@ -41,11 +41,11 @@ func ScrapStock(ticker string, ch chan Stock) {
 		log.Println("Error while scrapping: ", err)
 	})
 	c.OnHTML("div#quote-header-info", func(e *colly.HTMLElement) {
-		stock.company = e.ChildText("h1")
+		stock.Company = e.ChildText("h1")
 		price := e.ChildText("fin-streamer[data-field='regularMarketPrice']")
-		stock.price = toStockType(price)
+		stock.Price = toStockType(price)
 		change := e.ChildText("fin-streamer[data-field='regularMarketChangePercent']")
-		stock.change = toStockType(change)
+		stock.Change = toStockType(change)
 		ch <- stock
 	})
 	go c.Visit(url)
