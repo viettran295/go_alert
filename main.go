@@ -18,6 +18,10 @@ func main() {
 	ch := make(chan req.CryptoResponse, len(CryptoSym))
 	stockCh := make(chan req.Stock, len(StockSym))
 
+	StockThresh := map[string]float32{
+		"PriceThresh": 5,
+	}
+
 	TypeAndThresh := map[string]float64{
 		"VolChange24h": 100,
 		"PerChange24h": 10,
@@ -29,7 +33,12 @@ func main() {
 			go req.ScrapStock(ticker, stockCh)
 		}
 		for i := 0; i < len(StockSym); i++ {
-			log.Println(<-stockCh)
+			stock := <-stockCh
+			log.Println(stock)
+			if stock.Change > StockThresh["PriceThresh"] {
+				log.Printf("ALERT percent price change of %s: %f", stock.Company, stock.Change)
+				go go_mail.CreateAlertMsg(stock.Company, "Percent price", float64(stock.Change))
+			}
 		}
 
 		for _, symbol := range CryptoSym {
