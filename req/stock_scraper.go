@@ -11,7 +11,7 @@ import (
 
 type Stock struct {
 	Company       string
-	Price, Change float32
+	Price, Change float64
 }
 
 func trimSpecialChar(str string) string {
@@ -22,14 +22,14 @@ func trimSpecialChar(str string) string {
 
 // Covert price and percent change from string to float
 // to match with Stock type attribute
-func toStockType(str string) float32 {
+func toStockType(str string) float64 {
 	number := trimSpecialChar(str)
 	toFloat, err := strconv.ParseFloat(strings.ReplaceAll(number, ",", ""), 32)
 	if err != nil {
 		log.Println("Error while convert string to float: ", err)
 	}
 
-	return float32(toFloat)
+	return toFloat
 }
 
 func ScrapStock(ticker string, ch chan Stock) {

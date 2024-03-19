@@ -18,7 +18,7 @@ func main() {
 	ch := make(chan req.CryptoResponse, len(CryptoSym))
 	stockCh := make(chan req.Stock, len(StockSym))
 
-	StockThresh := map[string]float32{
+	StockThresh := map[string]float64{
 		"PriceThresh": 5,
 	}
 
