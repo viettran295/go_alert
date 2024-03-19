@@ -35,7 +35,7 @@ func main() {
 		for i := 0; i < len(StockSym); i++ {
 			stock := <-stockCh
 			log.Println(stock)
-			if stock.Change > StockThresh["PriceThresh"] {
+			if math.Abs(stock.Change) > StockThresh["PriceThresh"] {
 				log.Printf("ALERT percent price change of %s: %f", stock.Company, stock.Change)
 				go go_mail.CreateAlertMsg(stock.Company, "Percent price", float64(stock.Change))
 			}
