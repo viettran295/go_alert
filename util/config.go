@@ -2,6 +2,7 @@ package util
 
 import (
 	"log"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -17,13 +18,19 @@ type Config struct {
 }
 
 func LoadConfig(path string) (config Config, err error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
-	err = viper.ReadInConfig()
-	if err != nil {
-		log.Panicln("Error while loading config")
-		return
+	// Add credentials by .env file or pass as argument
+	if _, err := os.Stat("app.env"); err == nil {
+		viper.AddConfigPath(path)
+		viper.SetConfigName("app")
+		viper.SetConfigType("env")
+		err = viper.ReadInConfig()
+		if err != nil {
+			log.Println("Error while loading credential in .env file")
+		}
+	} else{
+		config.EmailSenderAddress = os.Getenv("EMAIL_SENDER_ADDRESS")
+		config.EmailSenderPassword = os.Getenv("EMAIL_SENDER_PASSWORD")
+		config.CoinMarketCapAPIkey = os.Getenv("COIN_MARKET_CAP_API_KEY")
 	}
 	err = viper.Unmarshal(&config)
 	return
