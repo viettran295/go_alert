@@ -15,6 +15,7 @@ type Config struct {
 	ProducerGroupid      string `mapstructure:"PRODUCER_GROUP_Id"`
 	ConsumerGroupid      string `mapstructure:"CONSUMER_GROUP_ID"`
 	CoinMarketCapAPIkey  string `mapstructure:"COIN_MARKET_CAP_API_KEY"`
+	PolygonKey           string `mapstructure:"POLYGON_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -31,6 +32,7 @@ func LoadConfig(path string) (config Config, err error) {
 		config.EmailSenderAddress = os.Getenv("EMAIL_SENDER_ADDRESS")
 		config.EmailSenderPassword = os.Getenv("EMAIL_SENDER_PASSWORD")
 		config.CoinMarketCapAPIkey = os.Getenv("COIN_MARKET_CAP_API_KEY")
+		config.PolygonKey = os.Getenv("POLYGON_KEY")
 	}
 	err = viper.Unmarshal(&config)
 	return
