@@ -41,4 +41,5 @@ jobs:
         COIN_MARKET_CAP_API_KEY: ${{secrets.COIN_MARKET_CAP_API_KEY}}
         EMAIL_SENDER_ADDRESS: ${{secrets.EMAIL_SENDER_ADDRESS}}
         EMAIL_SENDER_PASSWORD: ${{secrets.EMAIL_SENDER_PASSWORD}} 
+        POLYGON_KEY: ${{secrets.POLYGON_KEY}}
 
