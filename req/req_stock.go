@@ -43,16 +43,17 @@ func requestAllStockPrice(today bool) (interface{} , error) {
 }
 
 // Get all stocks price and map ticker with price
-func GetAllStockPrice(today bool) map[string]interface{} {
+func GetAllStockPrice(today bool, ch chan map[string]interface{}) {
 	result := make(map[string]interface{})
 	resp, err := requestAllStockPrice(today)
-	if err != nil{
+	if err == nil{
+		stocks := resp.(*models.GetGroupedDailyAggsResponse).Results
+		for _, stock := range(stocks){
+			result[stock.Ticker] = stock.High
+		}
+		ch <- result
+		close(ch)
+	} else {
 		log.Println(err)
-		return nil
-	} 
-	stocks := resp.(*models.GetGroupedDailyAggsResponse).Results
-	for _, stock := range(stocks){
-		result[stock.Ticker] = stock.High
 	}
-	return result
 }
