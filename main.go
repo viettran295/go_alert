@@ -13,15 +13,13 @@ import (
 func main() {
 	CryptoSym := []string{"BTC", "ETH", "SOL", "XRP", "LINK"}
 	StockSym := []string{"GOOG", "COIN", "AMZN", "META", "MSTR",
-		"AMD", "ARM", "NVDA", "TXN", "IBM"}
+						"AMD", "ARM", "NVDA", "TXN", "IBM"}
 
 	ch := make(chan req.CryptoResponse, len(CryptoSym))
-	stockCh := make(chan req.Stock, len(StockSym))
+	stockCurrCh := make(chan map[string]float64)
+	stockPrevCh := make(chan map[string]float64)
 
-	StockThresh := map[string]float64{
-		"PriceThresh": 5,
-	}
-
+	StockThresh := 5
 	TypeAndThresh := map[string]float64{
 		"VolChange24h": 100,
 		"PerChange24h": 10,
@@ -29,18 +27,26 @@ func main() {
 	}
 
 	for {
-		for _, ticker := range StockSym {
-			go req.ScrapStock(ticker, stockCh)
-		}
-		for i := 0; i < len(StockSym); i++ {
-			stock := <-stockCh
-			log.Println(stock)
-			if math.Abs(stock.Change) > StockThresh["PriceThresh"] {
-				log.Printf("ALERT percent price change of %s: %f", stock.Company, stock.Change)
-				go go_mail.CreateAlertMsg(stock.Company, "Percent price", float64(stock.Change))
+		go req.GetAllStockPrice(true, stockCurrCh)
+		go req.GetAllStockPrice(false, stockPrevCh)
+		select{
+		case todayStockPrice := <- stockCurrCh:
+			select{
+			case prevStockPrice := <- stockPrevCh: 
+				for _, ticker := range StockSym {
+					log.Println("Today Stock: ", ticker, "Price: ",todayStockPrice[ticker])
+					log.Println("Previous Stock: ", ticker, "Price: ",prevStockPrice[ticker])
+					percentChange := processor.PercentChange(todayStockPrice[ticker], prevStockPrice[ticker]) 
+					if percentChange > float64(StockThresh){
+						log.Printf("ALERT percent price change of %s: %f", ticker, percentChange)
+						go go_mail.CreateAlertMsg(ticker , "Percent price", percentChange)
+					}
+				}
+			default:
 			}
+		default:
 		}
-
+		
 		for _, symbol := range CryptoSym {
 			go req.GetCryptoPrice(symbol, ch)
 		}
@@ -57,7 +63,7 @@ func main() {
 				}
 			}
 		}
-		time.Sleep(6 * time.Hour)
+		time.Sleep(12 * time.Hour)
 	}
 
 	// <<<<<< Kafka >>>>>>
