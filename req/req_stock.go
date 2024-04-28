@@ -2,6 +2,7 @@ package req
 
 import (
 	"context"
+	"errors"
 	"go_alert/util"
 	"log"
 	"time"
@@ -13,22 +14,36 @@ import (
 var cfg, _ = util.LoadConfig(".")
 var c = polygon.New(cfg.PolygonKey)
 
-func requestAllStockPrice() (interface{} , error) {
+// @Params today: to query today stock price (true)
+// 				  to query previous day stock price (false)
+func requestAllStockPrice(today bool) (interface{} , error) {
 	currTime := time.Now()
 	currMonth := currTime.Month()
+	currDay := currTime.Day()
+
+	// Check whether today is weeken
+	switch{
+	case !today && int(currTime.Weekday()) == int(time.Saturday):
+		currDay--
+	case !today && int(currTime.Weekday()) == int(time.Sunday):
+		return nil, errors.New("Fail to query data on weekend") 
+	case today && (int(currTime.Weekday()) == int(time.Saturday) || int(currTime.Weekday()) == int(time.Sunday)):
+		return nil, errors.New("Fail to query data on weekend") 
+	}
+
 	params := models.GetGroupedDailyAggsParams{
 		Locale: "us",
 		MarketType: "stocks",
-		Date:   models.Date(time.Date(currTime.Year(), currMonth, currTime.Day()-1, 10, 0, 0, 0, time.UTC)),
+		Date:   models.Date(time.Date(currTime.Year(), currMonth, currDay, 10, 0, 0, 0, time.UTC)),
 	}.WithAdjusted(true)
 	return c.GetGroupedDailyAggs(context.Background(), params)
 	
 }
 
 // Get all stocks price and map ticker with price
-func GetAllStockPrice() map[string]interface{} {
+func GetAllStockPrice(today bool) map[string]interface{} {
 	result := make(map[string]interface{})
-	resp, err := requestAllStockPrice()
+	resp, err := requestAllStockPrice(today)
 	if err != nil{
 		log.Println(err)
 		return nil
@@ -38,18 +53,4 @@ func GetAllStockPrice() map[string]interface{} {
 		result[stock.Ticker] = stock.High
 	}
 	return result
-}
-
-// Get stock price in previous day
-func GetPrevStockPrice(ticker string, ch chan float64) {
-	params := models.GetPreviousCloseAggParams{
-		Ticker: ticker,
-	}.WithAdjusted(true)
-
-	resp, err := c.GetPreviousCloseAgg(context.Background(), params)
-	if err != nil {
-		log.Println(err)
-		log.Panicln("Fail to request stock price")
-	}
-	ch <- resp.Results[0].Low
 }
