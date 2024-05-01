@@ -32,7 +32,9 @@ func requestAllStockPrice(today bool) (interface{} , error) {
 	case today && (int(currTime.Weekday()) == int(time.Saturday) || int(currTime.Weekday()) == int(time.Sunday)):
 		return nil, errors.New("Fail to query data on weekend") 
 	}
-
+	if !today{
+		currDay--
+	}
 	params := models.GetGroupedDailyAggsParams{
 		Locale: "us",
 		MarketType: "stocks",
