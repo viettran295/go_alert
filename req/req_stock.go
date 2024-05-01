@@ -25,11 +25,9 @@ func requestAllStockPrice(today bool) (interface{} , error) {
 	switch{
 	case !today && int(currTime.Weekday()) == int(time.Saturday):
 		currDay--
-	case !today && int(currTime.Weekday()) == int(time.Sunday):
-		return nil, errors.New("Fail to query data on weekend") 
 	case !today && (currTime.Weekday()) == (time.Monday):
 		currDay -= 2
-	case today && (int(currTime.Weekday()) == int(time.Saturday) || int(currTime.Weekday()) == int(time.Sunday)):
+	case int(currTime.Weekday()) == int(time.Saturday) || int(currTime.Weekday()) == int(time.Sunday):
 		return nil, errors.New("Fail to query data on weekend") 
 	}
 	if !today{
