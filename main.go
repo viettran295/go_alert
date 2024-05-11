@@ -16,8 +16,7 @@ func main() {
 						"AMD", "ARM", "NVDA", "TXN", "IBM"}
 
 	ch := make(chan req.CryptoResponse, len(CryptoSym))
-	stockCurrCh := make(chan map[string]float64)
-	stockPrevCh := make(chan map[string]float64)
+	StockCh := make(chan map[string]float64)
 
 	StockThresh := 5
 	TypeAndThresh := map[string]float64{
@@ -27,26 +26,23 @@ func main() {
 	}
 
 	for {
-		go req.GetAllStockPrice(true, stockCurrCh)
-		go req.GetAllStockPrice(false, stockPrevCh)
+		go req.GetAllStockPrice(StockCh)
 		select{
-		case todayStockPrice := <- stockCurrCh:
-			select{
-			case prevStockPrice := <- stockPrevCh: 
-				for _, ticker := range StockSym {
-					log.Println("Today Stock: ", ticker, "Price: ",todayStockPrice[ticker])
-					log.Println("Previous Stock: ", ticker, "Price: ",prevStockPrice[ticker])
-					percentChange := processor.PercentChange(todayStockPrice[ticker], prevStockPrice[ticker]) 
-					if percentChange > float64(StockThresh){
-						log.Printf("ALERT percent price change of %s: %f", ticker, percentChange)
-						go go_mail.CreateAlertMsg(ticker , "Percent price", percentChange)
-					}
+		case ticker := <-StockCh:
+			for _, stock := range(StockSym){
+				highPrice := ticker[stock + " high"]
+				lowPrice := ticker[stock + " low"]
+				percentChange := processor.PercentChange(highPrice, lowPrice) 
+				if percentChange >= float64(StockThresh){
+					log.Printf("ALERT percent price change of %s: %f \n", stock, percentChange)
+					go go_mail.CreateAlertMsg(stock, "Percent price change", percentChange)
 				}
-			default:
 			}
-		default:
+		// Wait for goroutine fill out stock price channel 
+		case <-time.After(2 * time.Second):
+			log.Println("Timeout, stock channel is empty")
 		}
-		
+
 		for _, symbol := range CryptoSym {
 			go req.GetCryptoPrice(symbol, ch)
 		}
@@ -65,7 +61,6 @@ func main() {
 		}
 		time.Sleep(12 * time.Hour)
 	}
-
 	// <<<<<< Kafka >>>>>>
 	// if err_cfg != nil {
 	// 	log.Println("Can not load config info")

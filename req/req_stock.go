@@ -14,45 +14,33 @@ import (
 var cfg, _ = util.LoadConfig(".")
 var c = polygon.New(cfg.PolygonKey)
 
-// @Params today: to query today stock price (true)
-// 				  to query previous day stock price (false)
-func requestAllStockPrice(today bool) (interface{} , error) {
+func requestAllStockPrice() (interface{} , error) {
 	currTime := time.Now()
+	if (currTime.Weekday() == time.Saturday) || (currTime.Weekday() == time.Sunday){
+		return nil, errors.New("Fail to query data on weekend")
+	}
 	currMonth := currTime.Month()
 	currDay := currTime.Day()
-
-	// Check whether today is weeken
-	switch{
-	case !today && int(currTime.Weekday()) == int(time.Saturday):
-		currDay--
-	case !today && (currTime.Weekday()) == (time.Monday):
-		currDay -= 2
-	case int(currTime.Weekday()) == int(time.Saturday) || int(currTime.Weekday()) == int(time.Sunday):
-		return nil, errors.New("Fail to query data on weekend") 
-	}
-	if !today{
-		currDay--
-	}
+	
 	params := models.GetGroupedDailyAggsParams{
 		Locale: "us",
 		MarketType: "stocks",
 		Date:   models.Date(time.Date(currTime.Year(), currMonth, currDay, 10, 0, 0, 0, time.UTC)),
 	}.WithAdjusted(true)
 	return c.GetGroupedDailyAggs(context.Background(), params)
-	
 }
 
 // Get all stocks price and map ticker with price
-func GetAllStockPrice(today bool, ch chan map[string]float64) {
+func GetAllStockPrice(ch chan map[string]float64) {
 	result := make(map[string]float64)
-	resp, err := requestAllStockPrice(today)
+	resp, err := requestAllStockPrice()
 	if err == nil{
 		stocks := resp.(*models.GetGroupedDailyAggsResponse).Results
 		for _, stock := range(stocks){
-			result[stock.Ticker] = stock.High
+			result[stock.Ticker + " high"] = stock.High
+			result[stock.Ticker + " low"] = stock.Low
 		}
-		ch <- result
-		close(ch)
+		ch <-result
 	} else {
 		log.Println(err)
 	}
