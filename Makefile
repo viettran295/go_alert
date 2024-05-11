@@ -1,5 +1,5 @@
 APP_NAME = go-alert
-VM_DIR = ~/Desktop/Dev/OracleVM
+VM_DIR = ~/Desktop/Dev/cloudVM
 
 build:
 	go mod download
