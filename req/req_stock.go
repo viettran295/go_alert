@@ -25,7 +25,7 @@ func requestAllStockPrice() (interface{} , error) {
 	params := models.GetGroupedDailyAggsParams{
 		Locale: "us",
 		MarketType: "stocks",
-		Date:   models.Date(time.Date(currTime.Year(), currMonth, currDay, 10, 0, 0, 0, time.UTC)),
+		Date:   models.Date(time.Date(currTime.Year(), currMonth, currDay - 1, 0, 0, 0, 0, time.UTC)),
 	}.WithAdjusted(true)
 	return c.GetGroupedDailyAggs(context.Background(), params)
 }
